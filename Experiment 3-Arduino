@@ -1,0 +1,52 @@
+int outputPin =2;              //接超声波Trig到数字D2脚
+int inputPin =3;               //接超声波Echo到数字D3脚
+
+void setup()
+{
+  Serial.begin(19200);
+  pinMode(inputPin,INPUT);
+  pinMode(outputPin,OUTPUT);
+}
+
+void loop()
+{
+  digitalWrite(outputPin,LOW);
+  delayMicroseconds(2);
+  digitalWrite(outputPin,HIGH);//发出持续时间为10微秒到Trig脚驱动超声波检测
+  delayMicroseconds(10);
+  digitalWrite(outputPin,LOW);
+  int distance =pulseIn(inputPin,HIGH);   //接收脉冲的时间
+  distance =distance/23;                  //将脉冲时间转换为距离值
+  //Serial.print("The distance is :");  
+  //delay(100);    
+  //Serial.println(distance);
+Serial.println(String(distance));
+
+  /*
+  if(distance <= 20 ){
+    Serial.println("20");
+
+    }
+
+    else if(distance > 20 && distance <= 40 ){
+    Serial.println("40");
+
+    }
+
+    else if(distance >= 40 ){
+    Serial.println("200");
+
+    }
+    */
+  
+  
+
+    
+
+    
+    
+   
+  delay(50);
+
+  
+}
