@@ -1,0 +1,62 @@
+import processing.serial.*;
+Serial myPort;
+PImage BG;
+PImage Us;
+int x,y =220;
+String distance;
+
+String distanceVar;
+
+void setup()
+{
+  
+  distance = "1";
+  
+  size(1018,646);
+  //String portName = "";
+;  
+
+Us =loadImage("Us.png");
+BG = loadImage("BG.png");
+myPort =new Serial(this,"/dev/cu.usbmodem141101",19200);
+}
+
+void draw()
+{
+  if(myPort.available()>0)
+  {
+    distance = myPort.readStringUntil('\n'); 
+    if(distance != null){
+      
+      distanceVar = distance;
+      
+    }
+    
+    //println(distanceVar);
+    
+    //distance = myPo
+  }
+  
+
+  background(BG);
+  fill(30,40,40);
+  //rect(600,80,30,395);
+  
+  //x =(450- int(distanceVar))*(600-BUS.width)/450; //将读取的距离值换算成实际的坐标
+  //image(BUS, x, y);
+  println(float(distanceVar));
+  //x = int(distanceVar);
+ 
+  image(Us, float(distanceVar), 0, width/2, height);
+  //rect(int(distanceVar),int(distanceVar),100,int(distanceVar));
+  //if(int(distanceVar) < 30){println("30");}
+  //else if(int(distanceVar) > 30){println("60");}
+  
+  text("Distance is "+distanceVar+"CM",250,50);
+  
+  
+  
+  
+  
+  
+}
