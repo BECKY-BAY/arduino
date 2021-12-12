@@ -1,0 +1,108 @@
+/*
+  LED
+  This example creates a BLE peripheral with service that contains a
+  characteristic to control an LED.
+  The circuit:
+  - Arduino MKR WiFi 1010 or Arduino Uno WiFi Rev2 board
+  This example code is in the public domain.
+*/
+
+#include <ArduinoBLE.h>
+
+// LED Library setup
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
+#define PIN        6
+#define NUMPIXELS 100
+
+Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+#define DELAYVAL 1
+
+BLEService ledService("01bf5490-5b43-4c13-acbb-666242704cfa"); // BLE LED Service
+
+// BLE LED Switch Characteristic - custom 128-bit UUID, read and writable by central
+BLEByteCharacteristic switchCharacteristic("535bb823-7625-45e3-8582-06d8c1f11696", BLERead | BLEWrite);
+
+//const int ledPin = 4; // pin to use for the LED
+//set up led color
+int R = 0;
+
+void setup() {
+  Serial.begin(9600);
+  while (!Serial);
+  
+  // set LED pin to output mode
+  //pinMode(ledPin, OUTPUT);
+  //setup LED
+  #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
+  clock_prescale_set(clock_div_1);
+#endif
+
+  pixels.begin();
+  
+  // begin initialization
+  if (!BLE.begin()) {
+    Serial.println("starting BLE failed!");
+    while (1);
+  }
+
+  // set advertised local name and service UUID:
+  BLE.setLocalName("LED");
+  BLE.setAdvertisedService(ledService);
+
+  // add the characteristic to the service
+  ledService.addCharacteristic(switchCharacteristic);
+
+  // add service
+  BLE.addService(ledService);
+
+  // set the initial value for the characeristic:
+  switchCharacteristic.writeValue(0);
+
+  // start advertising
+  BLE.advertise();
+
+  Serial.println("BLE LED Peripheral");
+}
+
+void loop() {
+  
+  // listen for BLE peripherals to connect:
+  BLEDevice central = BLE.central();
+  
+  // if a central is connected to peripheral:
+  if (central) {
+    Serial.print("Connected to central: ");
+    // print the central's MAC address:
+    Serial.println(central.address());
+     
+    // while the central is still connected to peripheral:
+    while (central.connected()) {
+      LEDcontrol(R,0,10);
+      // if the remote device wrote to the characteristic,
+      // use the value to control the LED:
+      //LEDcontrol(R,G,B);
+      
+      if (switchCharacteristic.written()) {
+        int value = switchCharacteristic.value();
+        R = value;
+        Serial.println(value);
+      }
+    }
+
+    // when the central disconnects, print it out:
+    Serial.print(F("Disconnected from central: "));
+    Serial.println(central.address());
+  }
+}
+
+void LEDcontrol(int R,int G,int B){
+  pixels.clear();
+  for(int i=0; i<NUMPIXELS; i++) {
+    pixels.setPixelColor(i, pixels.Color(R, G, B));
+    pixels.show();
+    delay(DELAYVAL);
+  }
+  }
